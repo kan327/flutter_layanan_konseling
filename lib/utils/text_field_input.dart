@@ -41,11 +41,18 @@ class TextFieldInput extends StatelessWidget {
           ),
           filled: true,
           fillColor: Colors.white, // Warna latar belakang
-          contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8), // Padding sebelah kiri
+          contentPadding:
+              const EdgeInsets.fromLTRB(12, 8, 8, 8), // Padding sebelah kiri
           border: InputBorder.none, // Menghilangkan border
           suffixIcon: textInputType == TextInputType.emailAddress
-              ? Icon(Icons.email, color: accGrey,)
-              : Icon(Icons.lock, color: accGrey,),
+              ? Icon(
+                  Icons.email,
+                  color: accGrey,
+                )
+              : Icon(
+                  Icons.lock,
+                  color: accGrey,
+                ),
         ),
         keyboardType: textInputType,
         obscureText: isPass,

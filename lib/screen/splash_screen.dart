@@ -111,9 +111,11 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             Flexible(flex: 2, child: Container()),
             Center(
-              child:Image(
+              child: Image(
                 image: AssetImage('img/splash_screen.png'),
-                width: MediaQuery.of(context).size.width / 2 > 400 ? 400 : MediaQuery.of(context).size.width / 2,
+                width: MediaQuery.of(context).size.width / 2 > 400
+                    ? 400
+                    : MediaQuery.of(context).size.width / 2,
                 fit: BoxFit.contain,
               ),
             ),
@@ -148,44 +150,44 @@ class _SplashScreenState extends State<SplashScreen> {
               child: buildIndicator(),
             ),
             Flexible(flex: 3, child: Container()),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 50),
-                child: Ink(
-                    decoration: BoxDecoration(
-                      color: bluePrimary,
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => Login(),
-                        ));
-                      },
-                      splashColor: accGrey, // Warna animasi saat ditap
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(20, 8, 12, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Next",
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
-                                color: whiteFont,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.arrow_forward_rounded,
-                              color: whiteFont,
-                            ),
-                          ],
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: bluePrimary,
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                ),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => Login(),
+                    ));
+                  },
+                  splashColor: accGrey, // Warna animasi saat ditap
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(20, 8, 12, 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Next",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.nunito(
+                            color: whiteFont,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          color: whiteFont,
+                        ),
+                      ],
                     ),
                   ),
-                )
+                ),
+              ),
+            )
           ],
         ),
       ),
