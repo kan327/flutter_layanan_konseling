@@ -1,14 +1,18 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:layanan_konseling/screen/addJadwal.dart';
+import 'package:layanan_konseling/screen/detailJadwal.dart';
 import 'package:layanan_konseling/screen/login.dart';
 import 'package:layanan_konseling/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:layanan_konseling/network/api.dart';
 
 class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+  dynamic user;
+  Homepage({super.key, this.user});
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -36,6 +40,7 @@ class _HomepageState extends State<Homepage> {
     if (token != null) {
       if (mounted) {
         setState(() {
+          user = widget.user;
           isAuth = true;
         });
       }
@@ -59,6 +64,7 @@ class _HomepageState extends State<Homepage> {
       final data = responseData['data'] as Map<String, dynamic>;
       setState(() {
         user = data['user'];
+        // print(user);
       });
       final pertemuanList = (data['data'] as List<dynamic>).toList();
       // final userList = (data['user'] as List<dynamic>).toList();
@@ -203,7 +209,7 @@ class _HomepageState extends State<Homepage> {
                                 ]),
                           ),
                           const Positioned(
-                            right: 20,
+                            right: 5,
                             top: 8,
                             child: Image(
                               image: AssetImage('img/side_img.png'),
@@ -215,39 +221,96 @@ class _HomepageState extends State<Homepage> {
                       ),
                     ),
                   ),
-                  Container(
-                    width: 90,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                    margin: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: const BoxDecoration(
-                        color: bluePrimary,
-                        borderRadius: BorderRadius.all(Radius.circular(10000))),
-                    child: Theme(
-                      data: Theme.of(context).copyWith(
-                        iconTheme: const IconThemeData(
-                          size: 18, // Ukuran ikon
-                          weight: 0.1,
-                          color: whiteFont, // Warna ikon
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Date",
-                            style: TextStyle(
-                              color: whiteFont,
-                              fontSize: 14,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          isAuth
+                              ? Get.to(() => addJadwal())
+                              : Get.to(() => const Login());
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 13, vertical: 6),
+                          margin: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                color: bluePrimary, // Warna border
+                                width: 2.0, // Lebar border
+                              ),
+                              borderRadius: const BorderRadius.all(
+                                  Radius.circular(10000))),
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              iconTheme: const IconThemeData(
+                                size: 12, // Ukuran ikon
+                                weight: 0.1,
+                                color: bluePrimary, // Warna ikon
+                              ),
+                            ),
+                            child: const Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Add ",
+                                  style: TextStyle(
+                                    color: bluePrimary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 3,
+                                ),
+                                Icon(
+                                  Icons.add,
+                                  color: bluePrimary,
+                                ),
+                              ],
                             ),
                           ),
-                          Icon(
-                            Icons.date_range_sharp,
-                            color: whiteFont,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 8),
+                        margin: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: const BoxDecoration(
+                            color: bluePrimary,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10000))),
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            iconTheme: const IconThemeData(
+                              size: 12, // Ukuran ikon
+                              weight: 0.1,
+                              color: whiteFont, // Warna ikon
+                            ),
+                          ),
+                          child: const Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Date",
+                                style: TextStyle(
+                                  color: whiteFont,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 3,
+                              ),
+                              Icon(
+                                Icons.date_range_sharp,
+                                color: whiteFont,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,69 +352,73 @@ class _HomepageState extends State<Homepage> {
                             itemCount: pertemuanList.length,
                             itemBuilder: (_, int i) {
                               final pertemuan = pertemuanList[i];
+                              // print(pertemuan);
                               return DefaultTextStyle(
                                 style: TextStyle(color: blackFont),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 15, horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(20)),
-                                    border: Border.all(
-                                        color: bluePrimary, width: 2),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            "${pertemuan['tgl'].substring(0, 10)}",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
+                                child: InkWell(
+                                  onTap:() => Get.to(() => DetailJadwal(jadwal: pertemuan)),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 15, horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(20)),
+                                      border: Border.all(
+                                          color: bluePrimary, width: 2),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              "${pertemuan['tgl'].substring(0, 10)}",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
-                                          ),
-                                          Icon(
-                                            Icons.more_vert_sharp,
-                                            color: blackFont,
-                                          ),
-                                        ],
-                                      ),
-                                      Flexible(flex: 1, child: Container()),
-                                      Text(
-                                        "${pertemuan['tema']}",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      Text(
-                                        "${pertemuan['status']}",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                      Flexible(flex: 2, child: Container()),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            "Details",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: mateGrey,
-                                              fontWeight: FontWeight.w400,
+                                            Icon(
+                                              Icons.more_vert_sharp,
+                                              color: blackFont,
                                             ),
+                                          ],
+                                        ),
+                                        Flexible(flex: 1, child: Container()),
+                                        Text(
+                                          "${pertemuan['tema']}",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
                                           ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                        Text(
+                                          "${pertemuan['status']}",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        Flexible(flex: 2, child: Container()),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              "Details",
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: mateGrey,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:layanan_konseling/screen/homepage.dart';
 import 'package:layanan_konseling/screen/login.dart';
 import 'package:layanan_konseling/screen/splash_screen.dart';
@@ -14,10 +15,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return MaterialApp(
+      return GetMaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(seedColor: blueSecondary),
           textTheme: const TextTheme(
             bodyText1: TextStyle(color: blackFont), // Warna teks default
           ),

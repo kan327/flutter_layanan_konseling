@@ -5,57 +5,117 @@ class TextFieldInput extends StatelessWidget {
   final TextEditingController textEditingController;
   final bool isPass;
   final String hintText;
+  final dynamic enabled;
   final TextInputType textInputType;
+  final Icon icon;
+  dynamic callback;
 
-  const TextFieldInput({
+  TextFieldInput({
     Key? key,
     required this.hintText,
     required this.textInputType,
     required this.textEditingController,
+    required this.icon,
     this.isPass = false,
+    this.enabled = true,
+    this.callback = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (callback == false) {
+      callback = () {
+        return;
+      };
+    }
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(11),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.12),
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
             blurRadius: 12,
           ),
         ],
       ),
       child: TextField(
+        onTap: callback,
+        enabled: enabled,
         controller: textEditingController,
         cursorColor: bluePrimary,
         decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.normal,
+            ),
+            filled: true,
+            fillColor: Colors.white, // Warna latar belakang
+            contentPadding:
+                const EdgeInsets.fromLTRB(12, 8, 8, 8), // Padding sebelah kiri
+            border: InputBorder.none, // Menghilangkan border
+            suffixIcon: icon),
+        keyboardType: textInputType,
+        obscureText: isPass,
+      ),
+    );
+  }
+}
+
+class DropdownInput extends StatelessWidget {
+  final String? value;
+  final List<String> items;
+  final String hintText;
+  final ValueChanged<String?> onChanged;
+  final dynamic enabled;
+
+  const DropdownInput({
+    Key? key,
+    this.value,
+    required this.items,
+    required this.hintText,
+    required this.onChanged,
+    this.enabled = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(11),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            offset: const Offset(0, 2),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items.map((item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+        onChanged: enabled ? onChanged : null,
+        decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(
-            color: accGrey,
+            color: Colors.black,
             fontWeight: FontWeight.normal,
           ),
           filled: true,
-          fillColor: Colors.white, // Warna latar belakang
-          contentPadding:
-              const EdgeInsets.fromLTRB(12, 8, 8, 8), // Padding sebelah kiri
-          border: InputBorder.none, // Menghilangkan border
-          suffixIcon: textInputType == TextInputType.emailAddress
-              ? Icon(
-                  Icons.email,
-                  color: accGrey,
-                )
-              : Icon(
-                  Icons.lock,
-                  color: accGrey,
-                ),
+          fillColor: whiteBg,
+          contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+          border: InputBorder.none,
         ),
-        keyboardType: textInputType,
-        obscureText: isPass,
       ),
     );
   }

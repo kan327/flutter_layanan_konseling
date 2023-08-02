@@ -28,4 +28,16 @@ class Network {
       headers: _header(token), // menambahkan header pada request
     );
   }
+
+    // method untuk melakukan request HTTP dengan metode GET
+  getRequest({
+    required String route,
+    String token = '',
+  }) async {
+    String url = _url + route;
+    return await http.get(
+      Uri.parse(url),
+      headers: _header(token),
+    );
+  }
 }

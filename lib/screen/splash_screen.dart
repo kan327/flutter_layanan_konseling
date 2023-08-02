@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 children: [
                   TextSpan(
-                    text: 'NameApp',
+                    text: 'Layanan-Konseling',
                     style: GoogleFonts.nunito(
                         color: accGrey,
                         fontSize: 14,
@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Center(
               child: Image(
                 image: AssetImage('img/splash_screen.png'),
-                width: MediaQuery.of(context).size.width / 2 > 400
+                width: MediaQuery.of(context).size.width / 2 > 320
                     ? 400
                     : MediaQuery.of(context).size.width / 2,
                 fit: BoxFit.contain,
@@ -126,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 itemCount: widgets.length,
                 options: CarouselOptions(
                   viewportFraction: 1,
-                  aspectRatio: 30 / 9, // Atur rasio aspek sesuai kebutuhan
+                  aspectRatio: 30 / 15, // Atur rasio aspek sesuai kebutuhan
                   autoPlay: true,
                   enlargeCenterPage: true,
                   enableInfiniteScroll: false,

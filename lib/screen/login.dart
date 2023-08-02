@@ -114,12 +114,20 @@ class _LoginState extends State<Login> {
                       hintText: "Enter Your Email",
                       textInputType: TextInputType.emailAddress,
                       textEditingController: _emailController,
+                      icon: const Icon(
+                        Icons.email,
+                        color: accGrey,
+                      ),
                     ),
                     TextFieldInput(
                       hintText: "Enter Your Password",
                       textInputType: TextInputType.text,
                       textEditingController: _passwordController,
                       isPass: true,
+                      icon: const Icon(
+                        Icons.lock,
+                        color: accGrey,
+                      ),
                     ),
                   ],
                 ),
@@ -199,10 +207,10 @@ class _LoginState extends State<Login> {
       await preferences.setString("token", response['data']['token']);
 
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Homepage(),
+        builder: (context) => Homepage(user: response['data']['user']),
       ));
     } else {
-      print(response);
+      // print(response);
       _showMsg(response['data']);
     }
 
