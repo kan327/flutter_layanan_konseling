@@ -1,26 +1,95 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:layanan_konseling/network/api.dart';
+import 'package:layanan_konseling/screen/response.dart';
+import 'package:layanan_konseling/screen/updateJadwal.dart';
 import 'package:layanan_konseling/utils/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-  class DetailJadwal extends StatefulWidget {
-    dynamic jadwal;
-    DetailJadwal({super.key, this.jadwal});
+class DetailJadwal extends StatefulWidget {
+  dynamic jadwal;
+  DetailJadwal({super.key, this.jadwal});
 
-    @override
-    State<DetailJadwal> createState() => _DetailJadwalState();
+  @override
+  State<DetailJadwal> createState() => _DetailJadwalState();
+}
+
+class _DetailJadwalState extends State<DetailJadwal> {
+  dynamic jadwal = null;
+  bool isGuru = false;
+  late int guru_id;
+  late SharedPreferences sharedPreferences;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      jadwal = widget.jadwal;
+      LoadisGuru();
+    });
   }
 
-  class _DetailJadwalState extends State<DetailJadwal> {
-    dynamic jadwal = null;
-    @override
-    void initState() {
-      super.initState();
-      setState(() {
-        jadwal = widget.jadwal;
-        print(jadwal);
-      });
+  void LoadisGuru() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    String? role = sharedPreferences.getString('userRole');
+    guru_id = sharedPreferences.getInt('userId')!;
+    setState(() {
+      isGuru = role == 'guru';
+    });
+    print(sharedPreferences.getString('userRole') == 'guru');
+  }
+
+  bool toolsupdate({except = false}) {
+    if (except && isGuru) {
+      if (jadwal['status'] == 'accept' || jadwal['status'] == 'pending') {
+        return (jadwal['status'] == 'accept' || jadwal['status'] == 'pending');
+      } else {
+        return false;
+      }
     }
+    if (isGuru &&
+        jadwal['status'] != 'accept' &&
+        jadwal['status'] != 'pending' &&
+        jadwal['status'] != 'done') {
+      return true;
+    }
+    return false;
+  }
+
+  _showMsg(String content) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(content)));
+  }
+
+  void _terimaJadwal() async {
+    setState(() {
+      _isLoading = true;
+    });
+    var data = {
+      'id': jadwal['id'],
+      'guru_id': guru_id,
+      // 'tgl': jadwal['tgl'],
+      // 'tmpt': jadwal['tmpt'],
+      'status': 'accept',
+    };
+
+    final res = await Network().postRequest(
+      route: '/update_pertemuan',
+      data: data,
+    );
+
+    final response = jsonDecode(res.body);
+
+    if (response['status'] == 200) {
+      Get.offAll(() => ResponseView(data: response));
+    } else {
+      Get.offAll(() => ResponseView(data: response));
+    }
+  }
 
   Widget build(BuildContext context) {
     return SafeArea(
@@ -98,17 +167,18 @@ import 'package:layanan_konseling/utils/colors.dart';
                                 Container(
                                   padding: EdgeInsets.symmetric(vertical: 5),
                                   decoration: const BoxDecoration(
-                                    border: Border(bottom: BorderSide(
-                                      color: accGrey,
-                                      width: 2,
-                                    ))
-                                  ),
+                                      border: Border(
+                                          bottom: BorderSide(
+                                    color: accGrey,
+                                    width: 2,
+                                  ))),
                                   child: Column(
                                     children: [
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
                                         children: [
                                           Text(
                                             '${jadwal["tema"]}',
@@ -118,23 +188,34 @@ import 'package:layanan_konseling/utils/colors.dart';
                                                 fontWeight: FontWeight.w700),
                                           ),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
                                             children: [
                                               Container(
                                                 width: 35,
                                                 height: 10,
                                                 decoration: BoxDecoration(
-                                                  color: jadwal['status'] == 'done' ? bluePrimary : warningPrimary,
-                                                  borderRadius: BorderRadius.circular(100)
-                                                ),
+                                                    color: jadwal['status'] ==
+                                                            'done'
+                                                        ? bluePrimary
+                                                        : warningPrimary,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            100)),
                                               ),
-                                              const SizedBox(width: 3,),
-                                              Text("${jadwal['status']}".toUpperCase(), style: GoogleFonts.nunito(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: bluePrimary
-                                              ),)
+                                              const SizedBox(
+                                                width: 3,
+                                              ),
+                                              Text(
+                                                "${jadwal['status']}"
+                                                    .toUpperCase(),
+                                                style: GoogleFonts.nunito(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: bluePrimary),
+                                              )
                                             ],
                                           )
                                         ],
@@ -142,25 +223,26 @@ import 'package:layanan_konseling/utils/colors.dart';
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
                                         children: [
                                           Text(
-                                              "${jadwal['guru']['nama']}",
-                                              style: const TextStyle(
-                                                color: accGrey,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                            "${jadwal['guru']['nama']}",
+                                            style: const TextStyle(
+                                              color: accGrey,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
                                             ),
+                                          ),
                                           Text(
-                                              "${jadwal['tgl']}",
-                                              style: const TextStyle(
-                                                color: accGrey,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                            "${jadwal['tgl']}",
+                                            style: const TextStyle(
+                                              color: accGrey,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
                                             ),
-                                        ],          
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -169,7 +251,8 @@ import 'package:layanan_konseling/utils/colors.dart';
                                   margin: EdgeInsets.only(top: 10),
                                   width: double.infinity,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "${jadwal['tmpt']}",
@@ -179,14 +262,15 @@ import 'package:layanan_konseling/utils/colors.dart';
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700),
                                       ),
-                                      const SizedBox(height: 2,),
+                                      const SizedBox(
+                                        height: 2,
+                                      ),
                                       Text(
                                         '${jadwal["deskripsi"]}',
                                         textAlign: TextAlign.left,
                                         style: GoogleFonts.nunito(
-                                          fontSize: 12,
-                                          color: accGrey
-                                        ),)
+                                            fontSize: 12, color: accGrey),
+                                      )
                                     ],
                                   ),
                                 ),
@@ -194,18 +278,20 @@ import 'package:layanan_konseling/utils/colors.dart';
                                 Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(15),
-                                  margin: const EdgeInsets.symmetric(vertical: 15),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 15),
                                   decoration: BoxDecoration(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(20)),
-                                  border: Border.all(
-                                    color: bluePrimary,
-                                    width: 2,
-                                  )),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(20)),
+                                      border: Border.all(
+                                        color: bluePrimary,
+                                        width: 2,
+                                      )),
                                   child: DefaultTextStyle(
                                     style: TextStyle(color: bluePrimary),
                                     child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             "Terimakasih!",
@@ -227,39 +313,159 @@ import 'package:layanan_konseling/utils/colors.dart';
                                   ),
                                 ),
                                 Center(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Get.back();
-                                    },
-                                    child: Container(
-                                      width: 100,
-                                      padding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 13,
-                                              vertical: 6),
-                                      margin:
-                                          const EdgeInsets.symmetric(
-                                              vertical: 20),
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color:
-                                                bluePrimary, // Warna border
-                                            width: 2.0, // Lebar border
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Visibility(
+                                            visible: toolsupdate(),
+                                            child: Wrap(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    Get.to(() => UpdateJadwal(
+                                                        jadwal: jadwal));
+                                                  },
+                                                  child: Container(
+                                                    width: 100,
+                                                    padding: const EdgeInsets
+                                                            .symmetric(
+                                                        horizontal: 13,
+                                                        vertical: 6),
+                                                    margin: const EdgeInsets
+                                                            .symmetric(
+                                                        vertical: 20),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                          color:
+                                                              redPrimary, // Warna border
+                                                          width:
+                                                              2.0, // Lebar border
+                                                        ),
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                    .all(
+                                                                Radius.circular(
+                                                                    10000))),
+                                                    child: const Center(
+                                                      child: Text(
+                                                        "Tunda",
+                                                        style: TextStyle(
+                                                          color: redPrimary,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    _terimaJadwal();
+                                                  },
+                                                  child: Container(
+                                                    width: 100,
+                                                    padding: const EdgeInsets
+                                                            .symmetric(
+                                                        horizontal: 13,
+                                                        vertical: 6),
+                                                    margin: const EdgeInsets
+                                                            .symmetric(
+                                                        vertical: 20),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                          color:
+                                                              greenPrimary, // Warna border
+                                                          width:
+                                                              2.0, // Lebar border
+                                                        ),
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                    .all(
+                                                                Radius.circular(
+                                                                    10000))),
+                                                    child: const Center(
+                                                      child: Text(
+                                                        "Terima",
+                                                        style: TextStyle(
+                                                          color: greenPrimary,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          borderRadius:
-                                              const BorderRadius.all(
-                                                  Radius.circular(
-                                                      10000))),
-                                      child: const Center(
-                                        child: Text(
-                                          "Kembali ",
-                                          style: TextStyle(
-                                            color: bluePrimary,
-                                            fontSize: 12,
+                                        ],
+                                      ),
+                                      Visibility(
+                                        visible: toolsupdate(except: true),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Get.to(() => UpdateJadwal(
+                                                        jadwal: jadwal));
+                                          },
+                                          child: Container(
+                                            width: 100,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 13, vertical: 6),
+                                            margin: const EdgeInsets.symmetric(
+                                                vertical: 20),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color:
+                                                      bluePrimary, // Warna border
+                                                  width: 2.0, // Lebar border
+                                                ),
+                                                borderRadius: const BorderRadius
+                                                        .all(
+                                                    Radius.circular(10000))),
+                                            child: const Center(
+                                              child: Text(
+                                                "Selesai ",
+                                                style: TextStyle(
+                                                  color: bluePrimary,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Get.back();
+                                        },
+                                        child: Container(
+                                          width: 100,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 13, vertical: 6),
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 20),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color:
+                                                    bluePrimary, // Warna border
+                                                width: 2.0, // Lebar border
+                                              ),
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                      Radius.circular(10000))),
+                                          child: const Center(
+                                            child: Text(
+                                              "Kembali ",
+                                              style: TextStyle(
+                                                color: bluePrimary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ])

@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:layanan_konseling/network/api.dart';
 import 'package:layanan_konseling/screen/login.dart';
+import 'package:layanan_konseling/screen/response.dart';
 import 'package:layanan_konseling/utils/colors.dart';
 import 'package:layanan_konseling/utils/text_field_input.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+
 class addJadwal extends StatefulWidget {
   const addJadwal({super.key});
 
@@ -37,7 +42,9 @@ class _addJadwalState extends State<addJadwal> {
   DateTime _dateTime = DateTime.now();
   TimeOfDay _timeOfDay = TimeOfDay(hour: 8, minute: 30);
   late SharedPreferences sharedPreferences;
+  late int user_id;
   bool isAuth = false;
+  bool _isLoading = false;
   @override
   void _checkIfLoggedIn() async {
     sharedPreferences = await SharedPreferences.getInstance();
@@ -47,6 +54,7 @@ class _addJadwalState extends State<addJadwal> {
         setState(() {
           isAuth = true;
           username = sharedPreferences.getString('userName');
+          user_id = sharedPreferences.getInt('userId')!;
           _usernameController = TextEditingController(text: username);
         });
       }
@@ -80,6 +88,51 @@ class _addJadwalState extends State<addJadwal> {
     });
   }
 
+  void _sendJadwal() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final tema = temaValue!;
+    final tgl = "${_tanggalController.text} ${_waktuController.text}";
+    final tmpt = _tempatController.text;
+    final deskripsi = _deskripsiController.text;
+    final jenisKarir = karirValue ?? "";
+    if (tema == "Bimbingan Karir" && jenisKarir.isEmpty) {
+      _showMsg(
+          "Jika Anda Memilih Bimbingan Karir Sebagai Tema, Pastikan Mengisi Field Jenis Karir");
+      return;
+    }
+    if (_tanggalController.text.isEmpty ||
+        _waktuController.text.isEmpty ||
+        tmpt.isEmpty ||
+        deskripsi.isEmpty ||
+        tema.isEmpty) {
+      _showMsg("pastikan telah mengisi field yang diperlukan sebelum mengirim");
+      return;
+    }
+    var data = {
+      'user_id': user_id,
+      'tema': tema,
+      'tgl': tgl,
+      'tmpt': tmpt,
+      'deskripsi': deskripsi,
+      'jenis_karir': jenisKarir,
+    };
+
+    final res = await Network().postRequest(
+      route: '/store_pertemuan',
+      data: data,
+    );
+
+    final response = jsonDecode(res.body);
+
+    if (response['status'] == 200) {
+      Get.offAll(() => ResponseView(data: response));
+    } else {
+      Get.offAll(() => ResponseView(data: response));
+    }
+  }
+
   _showDatePicker(TextEditingController controller) {
     showDatePicker(
       context: context,
@@ -89,7 +142,8 @@ class _addJadwalState extends State<addJadwal> {
     ).then((value) {
       setState(() {
         _dateTime = value!;
-        String onlyDate = '${_dateTime.year}-${_dateTime.month.toString().padLeft(2, '0')}-${_dateTime.day.toString().padLeft(2, '0')}';
+        String onlyDate =
+            '${_dateTime.year}-${_dateTime.month.toString().padLeft(2, '0')}-${_dateTime.day.toString().padLeft(2, '0')}';
         controller.text = onlyDate;
       });
     });
@@ -101,16 +155,17 @@ class _addJadwalState extends State<addJadwal> {
       initialTime: TimeOfDay.now(),
     ).then((value) {
       setState(() {
-      var df =  DateFormat("h:mma");
-      _timeOfDay = value!;
-      String formattedTime12 = _timeOfDay.format(context).toString(); // Format waktu dengan format 24 jam
-      formattedTime12 = formattedTime12.replaceAll(" ", "");
-      var dt = df.parse(formattedTime12);
-      controller.text = DateFormat('HH:mm').format(dt);
+        var df = DateFormat("h:mma");
+        _timeOfDay = value!;
+        String formattedTime12 = _timeOfDay
+            .format(context)
+            .toString(); // Format waktu dengan format 24 jam
+        formattedTime12 = formattedTime12.replaceAll(" ", "");
+        var dt = df.parse(formattedTime12);
+        controller.text = DateFormat('HH:mm').format(dt);
       });
     });
   }
-  
 
   @override
   void initState() {
@@ -258,7 +313,7 @@ class _addJadwalState extends State<addJadwal> {
                                         items: temaItems,
                                         hintText: 'Select an option',
                                         onChanged: (value) {
-                                            temaValue = value;
+                                          temaValue = value;
                                         },
                                       ),
                                       const Padding(
@@ -390,7 +445,6 @@ class _addJadwalState extends State<addJadwal> {
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    
                                     children: [
                                       const Padding(
                                         padding:
@@ -416,11 +470,12 @@ class _addJadwalState extends State<addJadwal> {
                                         child: SizedBox(
                                           width: double.infinity,
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               const Padding(
-                                                padding:
-                                                    EdgeInsets.only(left: 10, top: 5),
+                                                padding: EdgeInsets.only(
+                                                    left: 10, top: 5),
                                                 child: Text(
                                                   "Jenis Karir",
                                                   textAlign: TextAlign.start,
@@ -436,7 +491,7 @@ class _addJadwalState extends State<addJadwal> {
                                                 items: karirItems,
                                                 hintText: 'pilih jenis karir',
                                                 onChanged: (value) {
-                                                    karirValue = value;
+                                                  karirValue = value;
                                                 },
                                               ),
                                             ],
@@ -537,7 +592,9 @@ class _addJadwalState extends State<addJadwal> {
                                             ),
                                           ),
                                           GestureDetector(
-                                            onTap: () {},
+                                            onTap: () {
+                                              _sendJadwal();
+                                            },
                                             child: Container(
                                               padding:
                                                   const EdgeInsets.symmetric(

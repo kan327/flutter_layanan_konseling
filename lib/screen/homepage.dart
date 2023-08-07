@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -9,16 +10,10 @@ import 'package:layanan_konseling/screen/login.dart';
 import 'package:layanan_konseling/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:layanan_konseling/network/api.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
-class Homepage extends StatefulWidget {
-  dynamic user;
-  Homepage({super.key, this.user});
-
-  @override
-  State<Homepage> createState() => _HomepageState();
-}
-
-class _HomepageState extends State<Homepage> {
+class HomepageController extends GetxController {
+  bool isAuth = false;
   dynamic user = {
     'id': 1,
     'nama': '...',
@@ -30,29 +25,13 @@ class _HomepageState extends State<Homepage> {
     'role': '...',
     'created_at': '...',
     'updated_at': '...',
-  };
-  Stream<List<dynamic>>? pertemuanStream;
-  late SharedPreferences sharedPreferences;
-  bool isAuth = false;
-  void _checkIfLoggedIn() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    var token = sharedPreferences.getString('token');
-    if (token != null) {
-      if (mounted) {
-        setState(() {
-          user = widget.user;
-          isAuth = true;
-        });
-      }
-    }
-    if (!isAuth) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Login(),
-      ));
-    }
-  }
+  }.obs;
 
-  Stream<List<dynamic>> fetchData() async* {
+  Rx<Stream<List<dynamic>>?> pertemuanStream = Rx<Stream<List<dynamic>>?>(null);
+  late SharedPreferences sharedPreferences;
+  dynamic fetchData() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    dynamic pertemuanList;
     final res = await Network().postRequest(
       route: '/pertemuan',
       data: {
@@ -60,26 +39,81 @@ class _HomepageState extends State<Homepage> {
       },
     );
     final responseData = jsonDecode(res.body);
+
     if (responseData['status'] == 200) {
-      final data = responseData['data'] as Map<String, dynamic>;
-      setState(() {
-        user = data['user'];
-        // print(user);
-      });
-      final pertemuanList = (data['data'] as List<dynamic>).toList();
-      // final userList = (data['user'] as List<dynamic>).toList();
-      pertemuanStream = Stream.value(pertemuanList);
-      // user = Stream.value(userList);
+      dynamic data = responseData['data'] as Map<String, dynamic>;
+      user = data['user'];
+      pertemuanList = (data['data'] as List<dynamic>).toList();
+      pertemuanStream.value = Stream.value(pertemuanList);
     } else {
-      pertemuanStream = Stream.value([]);
+      pertemuanStream.value = Stream.value([]);
     }
+    return pertemuanList;
+  }
+
+  void _checkIfLoggedIn() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    var token = sharedPreferences.getString('token');
+    if (token != null) {
+      isAuth = true;
+    }
+    if (!isAuth) {
+      Get.offAll(() => Login());
+    }
+  }
+  void cancelStream() {
+    pertemuanStream.close();
   }
 
   @override
+  void onClose() {
+    cancelStream(); // Pastikan stream di-cancel saat controller ditutup
+    super.onClose();
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchData();
+  }
+}
+
+class Homepage extends StatefulWidget {
+  Homepage({super.key});
+
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  final HomepageController _controller = Get.put(HomepageController());
+  dynamic lastData;
+//  void loadData() async {
+//       dynamic newdata = await _controller.fetchData();
+//       _controller._checkIfLoggedIn();
+//       setState(() {
+//         _controller.pertemuanStream.value = Stream.value(newdata); ////////////////// whyrhhhhhh?????????????? DO NOT DEAL WITH ME ABOUT THIS
+//       });
+//  }
+  @override
   void initState() {
     super.initState();
-    _checkIfLoggedIn();
-    pertemuanStream = fetchData();
+    // loadData();
+    // Timer(Duration(seconds: 5), () async {
+    //   // Tindakan yang ingin Anda lakukan setelah 5 detik
+    //   dynamic newdata = await _controller.fetchData();
+    //   _controller._checkIfLoggedIn();
+    //   setState(() {
+    //     _controller.pertemuanStream.value = Stream.value(newdata); ////////////////// whyrhhhhhh?????????????? DO NOT DEAL WITH ME ABOUT THIS
+    //   });
+    // });
+    Timer.periodic(Duration(seconds: 5), (timer) async {
+      dynamic newdata = await _controller.fetchData();
+      _controller._checkIfLoggedIn();
+      setState(() {
+        _controller.pertemuanStream.value = Stream.value(newdata); ////////////////// whyrhhhhhh?????????????? DO NOT DEAL WITH ME ABOUT THIS
+      });
+    });
     // print(pertemuanStream);
   }
 
@@ -142,7 +176,7 @@ class _HomepageState extends State<Homepage> {
                                 ),
                                 children: [
                                   TextSpan(
-                                    text: "${user['nama']}",
+                                    text: "${_controller.user['nama']}",
                                     style: GoogleFonts.nunito(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w700),
@@ -226,7 +260,7 @@ class _HomepageState extends State<Homepage> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          isAuth
+                          _controller.isAuth
                               ? Get.to(() => addJadwal())
                               : Get.to(() => const Login());
                         },
@@ -254,7 +288,7 @@ class _HomepageState extends State<Homepage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Add ",
+                                  "Add jadwal",
                                   style: TextStyle(
                                     color: bluePrimary,
                                     fontSize: 12,
@@ -337,8 +371,14 @@ class _HomepageState extends State<Homepage> {
                     margin: const EdgeInsets.symmetric(vertical: 15),
                     height: 400,
                     child: StreamBuilder<List<dynamic>>(
-                      stream: pertemuanStream,
+                      stream: _controller.pertemuanStream.value,
                       builder: (context, snapshot) {
+                        print(
+                            "=====================================================================================");
+                        print(_controller.user['nama']);
+                        print(
+                            "=====================================================================================");
+                        print(_controller.pertemuanStream);
                         // print(snapshot);
                         if (snapshot.hasData) {
                           final pertemuanList = snapshot.data!;
@@ -356,7 +396,8 @@ class _HomepageState extends State<Homepage> {
                               return DefaultTextStyle(
                                 style: TextStyle(color: blackFont),
                                 child: InkWell(
-                                  onTap:() => Get.to(() => DetailJadwal(jadwal: pertemuan)),
+                                  onTap: () => Get.to(
+                                      () => DetailJadwal(jadwal: pertemuan)),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 15, horizontal: 12),

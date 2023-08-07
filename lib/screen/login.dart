@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:layanan_konseling/network/api.dart';
 import 'package:layanan_konseling/screen/homepage.dart';
+import 'package:layanan_konseling/screen/response.dart';
 // import 'package:uji_level_bk/main.dart';
 import 'package:layanan_konseling/utils/colors.dart';
 import 'package:layanan_konseling/utils/text_field_input.dart';
@@ -197,18 +199,22 @@ class _LoginState extends State<Login> {
 
     if (response['status'] == 200) {
       _showMsg(response['messages'].toString());
+
       SharedPreferences preferences = await SharedPreferences.getInstance();
+      
       await preferences.setInt("userId", response['data']['user']['id']);
       await preferences.setString("userName", response['data']['user']['nama']);
       await preferences.setString(
           "profile", response['data']['user']['profile']);
       await preferences.setString(
-          "userEmail", response['data']['user']['email']);
+          "userRole", response['data']['user']['role']);
       await preferences.setString("token", response['data']['token']);
 
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Homepage(user: response['data']['user']),
-      ));
+      // Get.off(() => Homepage(user: response['data']['user']));
+      Get.off(() => Homepage());
+
+
+
     } else {
       // print(response);
       _showMsg(response['data']);

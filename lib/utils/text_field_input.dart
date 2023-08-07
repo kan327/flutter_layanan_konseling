@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:layanan_konseling/utils/colors.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 class TextFieldInput extends StatelessWidget {
   final TextEditingController textEditingController;
@@ -31,11 +32,11 @@ class TextFieldInput extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: whiteBg,
         borderRadius: BorderRadius.circular(11),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: blackFont.withOpacity(0.12),
             offset: const Offset(0, 2),
             blurRadius: 12,
           ),
@@ -46,14 +47,15 @@ class TextFieldInput extends StatelessWidget {
         enabled: enabled,
         controller: textEditingController,
         cursorColor: bluePrimary,
+        style: const  TextStyle(color: blackFont),
         decoration: InputDecoration(
             hintText: hintText,
             hintStyle: const TextStyle(
-              color: Colors.black,
+              color: blackFont,
               fontWeight: FontWeight.normal,
             ),
             filled: true,
-            fillColor: Colors.white, // Warna latar belakang
+            fillColor: whiteBg, // Warna latar belakang
             contentPadding:
                 const EdgeInsets.fromLTRB(12, 8, 8, 8), // Padding sebelah kiri
             border: InputBorder.none, // Menghilangkan border
@@ -86,11 +88,11 @@ class DropdownInput extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: whiteBg,
         borderRadius: BorderRadius.circular(11),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: blackFont.withOpacity(0.12),
             offset: const Offset(0, 2),
             blurRadius: 12,
           ),
@@ -108,7 +110,7 @@ class DropdownInput extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(
-            color: Colors.black,
+            color: blackFont,
             fontWeight: FontWeight.normal,
           ),
           filled: true,

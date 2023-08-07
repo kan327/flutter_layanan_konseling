@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:layanan_konseling/screen/homepage.dart';
 import 'package:layanan_konseling/screen/login.dart';
+import 'package:layanan_konseling/screen/response.dart';
 import 'package:layanan_konseling/screen/splash_screen.dart';
 import 'package:layanan_konseling/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,17 +16,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return GetMaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: blueSecondary),
-          textTheme: const TextTheme(
-            bodyText1: TextStyle(color: blackFont), // Warna teks default
-          ),
-          useMaterial3: true,
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: blueSecondary),
+        textTheme: const TextTheme(
+          bodyText1: TextStyle(color: blackFont), // Warna teks default
         ),
-        home: CheckAuth(),
-      );
+        useMaterial3: true,
+      ),
+      home: CheckAuth(),
+    );
   }
 }
 
@@ -45,10 +46,8 @@ class _CheckAuthState extends State<CheckAuth> {
   }
 
   void _checkIfLoggedIn() async {
-    sharedPreferences = await SharedPreferences
-        .getInstance(); 
-    var token = sharedPreferences
-        .getString('token');
+    sharedPreferences = await SharedPreferences.getInstance();
+    var token = sharedPreferences.getString('token');
     if (token != null) {
       if (mounted) {
         setState(() {
@@ -64,6 +63,7 @@ class _CheckAuthState extends State<CheckAuth> {
     if (isAuth) {
       // perbandingan sederhana dengan isAuth yang sudah dikondisikan tadi diatas
       child = Homepage();
+      // child = ResponseView(data: exampleData,);
     } else {
       child = SplashScreen();
     }

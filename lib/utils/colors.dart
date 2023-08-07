@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 const bluePrimary = Color(0xFF4267AD);
 const warningPrimary = Color(0xFFFFB01A);
+const redPrimary = Color(0xFFAD4242);
+const greenPrimary = Color(0xFF42AD47);
 const blueSecondary = Color.fromRGBO(66, 103, 173, 1);
 const accGrey = Color(0xFFC8C8C8);
 const mateGrey = Color(0xFF6D6D6D);
